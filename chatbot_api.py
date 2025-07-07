@@ -17,7 +17,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_pinecone import PineconeVectorStore
 
 # --- 2. CONFIGURACIÓN DE CONSTANTES Y CADENA RAG ---
-INDEX_NAME = "rebt-chatbot"
+INDEX_NAME = "chatbot-rebt"
 
 print("Iniciando Bot de LangChain (modo de ejecución)...")
 print("Configurando la cadena RAG con Pinecone...")
