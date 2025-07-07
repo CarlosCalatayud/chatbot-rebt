@@ -19,29 +19,55 @@ from pinecone import Pinecone
 INDEX_NAME = "chatbot-rebt" # Asegúrate que coincide con tu índice de Pinecone
 
 # --- Lógica de Creación de la DB ---
+# 1. Definir la ruta base del proyecto de forma segura
+#    Esto nos da la ruta absoluta de la carpeta donde se encuentra build.py
+BASE_DIR = os.path.dirname(os.path.abspath(__file__)) 
+DOCS_PATH = os.path.join(BASE_DIR, 'docs') # Construimos la ruta absoluta a la carpeta 'docs'
+
 print("--- INICIANDO BUILD SCRIPT ---")
+print(f"Buscando PDFs en la ruta absoluta: {DOCS_PATH}")
+
 
 # Inicializamos Pinecone
 pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"), environment=os.getenv("PINECONE_ENVIRONMENT"))
 
 # Comprobamos si el índice ya existe en Pinecone
 if INDEX_NAME not in pc.list_indexes().names():
-    print(f"El índice '{INDEX_NAME}' no existe en Pinecone. Creándolo...")
-    # Aquí puedes añadir la lógica para crear el índice si es necesario,
-    # pero es mejor crearlo desde la web de Pinecone.
-    # pc.create_index(name=INDEX_NAME, dimension=1536, metric='cosine', spec=...)
     raise NameError(f"El índice '{INDEX_NAME}' debe ser creado manualmente en la web de Pinecone primero.")
 
-# Comprobamos si el índice ya ha sido poblado
 index_stats = pc.Index(INDEX_NAME).describe_index_stats()
+
 if index_stats.total_vector_count == 0:
     print(f"El índice '{INDEX_NAME}' está vacío. Procesando y subiendo documentos...")
     
-    # ... (la carga de PDFs y el text_splitter se mantienen igual) ...
-    pdf_files = glob.glob("docs/*.pdf")
+    # --- INICIO DE LA SOLUCIÓN: LOGGING DE ARCHIVOS ---
+    pdf_files = glob.glob(os.path.join(DOCS_PATH, '*.pdf')) # Usamos la ruta absoluta
+    
+    if not pdf_files:
+        # Añadimos un log para ver qué hay en la carpeta si no encuentra PDFs
+        print(f"¡ADVERTENCIA! No se encontraron archivos PDF. Contenido de {DOCS_PATH}: {os.listdir(DOCS_PATH)}")
+        raise FileNotFoundError("No se encontraron PDFs en la carpeta 'docs' para el build.")
+    
+    print(f"Archivos PDF encontrados ({len(pdf_files)}): {pdf_files}")
+    # --- FIN DE LA SOLUCIÓN ---
     # ...
     all_documents = []
     # ...
+    for pdf_file in pdf_files:
+        try:
+            print(f"Cargando {pdf_file}...")
+            loader = PyPDFLoader(pdf_file)
+            all_documents.extend(loader.load())
+        except Exception as e:
+            print(f"ERROR al cargar el archivo {pdf_file}: {e}")
+            # Decidimos si continuar o parar. Por ahora, continuamos.
+            continue
+    
+    print(f"Total de páginas cargadas de todos los PDFs: {len(all_documents)}")
+    if not all_documents:
+        raise ValueError("No se pudo cargar ninguna página de los PDFs encontrados.")
+
+
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
     texts = text_splitter.split_documents(all_documents)
     
