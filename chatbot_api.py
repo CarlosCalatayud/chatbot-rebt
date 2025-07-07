@@ -23,7 +23,7 @@ from langchain_pinecone import PineconeVectorStore
 from pinecone import Pinecone
 
 # --- 2. CONFIGURACIÓN DE PINECONE Y LANGCHAIN ---
-INDEX_NAME = "rebt-chatbot" # El nombre de tu índice en Pinecone
+INDEX_NAME = "chatbot-rebt" # El nombre de tu índice en Pinecone
 
 # Inicializamos Pinecone
 pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"), environment=os.getenv("PINECONE_ENVIRONMENT"))
