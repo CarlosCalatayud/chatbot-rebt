@@ -16,7 +16,7 @@ from langchain_pinecone import PineconeVectorStore
 from pinecone import Pinecone
 
 # --- Constantes ---
-INDEX_NAME = "rebt-chatbot" # Asegúrate que coincide con tu índice de Pinecone
+INDEX_NAME = "chatbot-rebt" # Asegúrate que coincide con tu índice de Pinecone
 
 # --- Lógica de Creación de la DB ---
 print("--- INICIANDO BUILD SCRIPT ---")
